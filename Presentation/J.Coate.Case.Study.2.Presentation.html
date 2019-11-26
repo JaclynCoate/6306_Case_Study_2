@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Jaclyn A Coate" />
+  <meta name="dcterms.date" content="2019-11-26" />
+  <title>Case Study 2</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="J.Coate.Case.Study.2.Presentation_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+
+<link rel="stylesheet" href="J.Coate.Case.Study.2.Presentation_files/reveal.js-3.3.0.1/css/theme/serif.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+    <link rel="stylesheet" href="styles.css"/>
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <div id="header-footer">
+      <img class="slide-logo" src="fritolaylogo.png"/>
+    </div>
+    <link href="J.Coate.Case.Study.2.Presentation_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="J.Coate.Case.Study.2.Presentation_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Case Study 2</h1>
+    <h2 class="author">Jaclyn A Coate</h2>
+    <h3 class="date">2019-11-26</h3>
+</section>
+
+<section><section id="introduction" class="title-slide slide level1"><h1>Introduction</h1></section><section id="contributors" class="slide level2">
+<h2>Contributors</h2>
+<h3 id="jaclyn-coate">Jaclyn Coate</h3>
+</section></section>
+<section><section id="attrition" class="title-slide slide level1"><h1>Attrition</h1></section><section id="exploratory-data-analysis" class="slide level2">
+<h2>Exploratory Data Analysis</h2>
+<ul>
+<li>Correlation</li>
+<li>Trends</li>
+<li>Causation?</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="missing-data-evaluation">Missing data evaluation</h3>
+<ul>
+<li>No missing values</li>
+<li>Continue w/ exploratory data analysis</li>
+</ul>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/NA%20eval-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="dropping-all-zero-variance-variables">Dropping all zero variance variables</h3>
+<ul>
+<li>EmployeeCount</li>
+<li>Over18</li>
+<li>StandardHours</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="remove-logically-irrelevant-variables">Remove logically irrelevant variables</h3>
+<ul>
+<li>EmployeeNumber</li>
+<li>ID</li>
+<li>PerformanceRating
+<ul>
+<li>Self given performance rating</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="storing-all-categorical-variables-as-factors">Storing all categorical variables as factors</h3>
+<ul>
+<li>Attrition | Business Travel | Over Time</li>
+<li>Departemtn | Education Field | Over 18</li>
+<li>Gender | Job Role | Marital Status</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="storing-all-level-variables-as-factors">Storing all level variables as factors</h3>
+<ul>
+<li>Job Involvement | Environment Satis | Education |</li>
+<li>Relationship Satis | Stock Option Level | Over 18 |</li>
+<li>Work Life Balance | Relationship Satis | Job Level | Job Satisfaction</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="correlated-variables-review">Correlated Variables Review</h3>
+<ul>
+<li>Highly correlated variables can weaken the model</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="correlated-variables-review-1">Correlated Variables Review</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/attition:%20high%20correlation-1.png" /></p>
+</section><section class="slide level2">
+
+<ul>
+<li>Highly correlated relationships
+<ul>
+<li>Total Working Years v Monthly Income: .78</li>
+<li>Years at Company v Years in Current Role: .78</li>
+<li>Years at Company v Years with Current Manager: .77</li>
+<li>Years at Company v Total Working Years: .64</li>
+<li>Years at Company v Years Since Last Promotion: .64</li>
+<li>Years with Current Manager v Years in Current Role: .71</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="correlated-variables-review-2">Correlated Variables Review</h3>
+<ul>
+<li>Keep: Monthly Income, Years In Current Role, Years Since Last Promotion, Years At Company, Total Working Years, Years With Current Manager</li>
+<li>Drop: Years at Company</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review">Numeric v Categorical Review</h3>
+<ul>
+<li>Comparison of Attrition (dependent variable of interest) to categorical variables</li>
+<li>Density plot
+<ul>
+<li>Colored by Attrition</li>
+<li>If density plot shows peaks in separate areas then important variable</li>
+<li>If density plot shows peaks in the same spot (clean overlay) then not an important variable</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review-1">Numeric v Categorical Review</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/attrition:%20numeric%20v%20categorical%20graph%20grid-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review-2">Numeric v Categorical Review</h3>
+<ul>
+<li>Remove variables that have similar trends</li>
+<li>Keep variables that are showing opposite attrition Patterns
+<ul>
+<li>Monthly Income, Years In Current Role, Number Companies Worked, Age</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="categorical-v-categorical-review">Categorical v Categorical Review</h3>
+<ul>
+<li>Comparison of Attrition (dependent variable of interest) to numerical variables available</li>
+<li>Bar Chart
+<ul>
+<li>Colored by Attrition</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="categorical-v-categorical-review-1">Categorical v Categorical Review</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/attrition:%20categorical%20v%20categorical-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="categorical-v-categorical-review-2">Categorical v Categorical Review</h3>
+<ul>
+<li>Remove variables that show a small | zero difference</li>
+<li>Keep variables that show a large difference</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="k-nearest-neighbor-model-variables">K Nearest Neighbor Model Variables</h3>
+<ul>
+<li>Response Variable: Attrition</li>
+<li>Explanatory Variables: Number of Companies Worked, Over Time, Stock Option Level</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="k-nearest-neighbor-model-best-k">K Nearest Neighbor Model Best K</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/unnamed-chunk-1-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="final-knn-model">Final KNN Model</h3>
+<h4 id="attrition-b_0-beta_1-numcompaniesworked-b_2-overtime-b_3-stockoptionlevel">Attrition = B_0 + Beta_1 * NumCompaniesWorked + B_2 * OverTime + B_3 * StockOptionLevel</h4>
+<ul>
+<li>Accuracy &gt; 80%</li>
+<li>Sensitivity &gt; 80%</li>
+<li>Specificity = 75%</li>
+</ul>
+</section><section id="attrition-recap" class="slide level2">
+<h2>Attrition Recap</h2>
+<ul>
+<li>Explanatory Variables
+<ul>
+<li>Job Level, Job Role</li>
+</ul></li>
+<li>Attrition = Beta<sub>0</sub> + Beta<sub>1</sub> * NumCompaniesWorked + Beta<sub>2</sub> * OverTime + Beta<sub>3</sub> * StockOptionLevel</li>
+</ul>
+</section></section>
+<section><section id="salary" class="title-slide slide level1"><h1>Salary</h1></section><section id="exploratory-data-analysis-1" class="slide level2">
+<h2>Exploratory Data Analysis</h2>
+<ul>
+<li>Correlation</li>
+<li>Trends</li>
+<li>Causation?</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="drop-nas">Drop NAs</h3>
+<h3 id="missing-data-evaluation-1">Missing data evaluation</h3>
+<h3 id="dropping-all-zero-variance-variables-1">Dropping all zero variance variables</h3>
+</section><section class="slide level2">
+
+<h3 id="correlated-variables-review-3">Correlated Variables Review</h3>
+<ul>
+<li>Monthly Income correlated variables
+<ul>
+<li>Monthly Income v Total Working Years: .78</li>
+<li>Monthly Income v Age: .48</li>
+<li>Monthly Income v Years in Current Role: .36</li>
+<li>Monthly Income v Years At Company: .49</li>
+<li>Monthly Income v Years With Current Manager: .33</li>
+<li>Monthly Income v Years Since Last Promotion: .32</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="correlated-variables-review-4">Correlated Variables Review</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/salary:%20high%20correlation-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="correlated-variables-review-5">Correlated Variables Review</h3>
+<ul>
+<li>Correlated explanatory variables can weaken the model</li>
+<li>Keep: Total Working Years</li>
+<li>Drop: Age, Years In Current Role, Years At Company, Years With Current Manager, Years Since Last Promotion</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-numeric-review">Numeric v Numeric Review</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/salary:%20numeric%20v%20numeric%20graph%20grid-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-numeric-review-1">Numeric v Numeric Review</h3>
+<ul>
+<li>Clear linear relationships are selected
+<ul>
+<li>Keep: Monthly Income, Total Working Years</li>
+<li>Drop: Percent Salary, Daily Rate, Distance from Home, Hourly Rate, Monthly Rate, Number of Companies Worked, Percent Salary Hike, Training Times Last Year</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review-3">Numeric v Categorical Review</h3>
+<ul>
+<li>Comparison of Monthly Income (dependent variable of interest) to categorical variables left in model</li>
+<li>Boxplot
+<ul>
+<li>Variations of Monthly Income between boxplots</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review-4">Numeric v Categorical Review</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Asalar:%20numeric%20v%20categorical%20graph%20grid-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review-5">Numeric v Categorical Review</h3>
+<ul>
+<li>Categorical variables with Monthly Income distribution differences
+<ul>
+<li>Eduction, Job Level, Job Role</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h5 id="monthly-income-v-education">Monthly Income v Education</h5>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Monthly%20Income%20v%20Education-1.png" /></p>
+</section><section class="slide level2">
+
+<h5 id="monthly-income-v-job-level">Monthly Income v Job Level</h5>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Monthly%20Income%20v%20Job%20Level-1.png" /></p>
+</section><section class="slide level2">
+
+<h5 id="monthly-income-v-job-role">Monthly Income v Job Role</h5>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Monthly%20Income%20v%20Job%20Role-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="numeric-v-categorical-review-6">Numeric v Categorical Review</h3>
+<ul>
+<li>Upone closer reivew
+<ul>
+<li>Job Level, Job Role</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="mspe-model">MSPE Model</h3>
+<ul>
+<li>Response Variable: Monthly Income</li>
+<li>Explanatory Variables: Job Level, Job Role, Total Working Years</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="mspe-model-1">MSPE Model</h3>
+<ul>
+<li>MonthlyIncome = B<sub>0</sub> + B<sub>1</sub> * TotalWorkingYears + B<sub>2</sub> * JobRole + B<sub>3</sub> * JobLevel</li>
+<li>Root Mean Square Error &lt; 931</li>
+</ul>
+<pre><code>## [1] 930.998</code></pre>
+</section><section id="salary-recap" class="slide level2">
+<h2>Salary Recap</h2>
+<ul>
+<li>Explanatory Variables
+<ul>
+<li>Job Level, Job Role</li>
+</ul></li>
+<li>Best prediction model
+<ul>
+<li>MonthlyIncome = B<sub>0</sub> + B<sub>1</sub> * TotalWorkingYears + B<sub>2</sub> * JobRole + B<sub>3</sub> * JobLevel</li>
+</ul></li>
+</ul>
+</section></section>
+<section><section id="job-role-trends" class="title-slide slide level1"><h1>Job Role Trends</h1></section><section id="exploratory-data-analysis-2" class="slide level2">
+<h2>Exploratory Data Analysis</h2>
+<ul>
+<li>Trends</li>
+<li>Causation?</li>
+</ul>
+</section><section class="slide level2">
+
+<h3 id="categorical-v-categorical">Categorical v Categorical</h3>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/eda%20of%20job%20role%20v%20categorical%20var-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="categorical-v-categorical-1">Categorical v Categorical</h3>
+<ul>
+<li>Insightful Job Role Trens
+<ul>
+<li>Attrition, OverTime, Job Satisfaction</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h4 id="job-role-v-attrition">Job Role v Attrition</h4>
+<ul>
+<li>Sales Reps, Research Scientists, Labratory Technicians</li>
+</ul>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/job%20role%20v%20attrition-1.png" /></p>
+</section><section class="slide level2">
+
+<h4 id="job-role-v-over-time">Job Role v Over Time</h4>
+<ul>
+<li>Sales Executives, Research Scientists, Labratory Technicians</li>
+</ul>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/job%20role%20v%20over%20time-1.png" /></p>
+</section><section class="slide level2">
+
+<h4 id="job-role-v-job-satisfaction">Job Role v Job Satisfaction</h4>
+<ul>
+<li>Sales Executives, Research Scientists, Labratory Technicians</li>
+</ul>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/job%20role%20v%20job%20satisfaction-1.png" /></p>
+</section><section class="slide level2">
+
+<h3 id="categorical-v-numeric">Categorical v Numeric</h3>
+<ul>
+<li>Trends among certain job roles
+<ul>
+<li>Keep: Age, Years Since Last Promotion, Years At Company</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+
+<h4 id="job-role-v-age">Job Role v Age</h4>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Job%20Role%20v%20Age-1.png" /></p>
+</section><section class="slide level2">
+
+<h4 id="job-role-v-years-since-last-promotion">Job Role v Years Since Last Promotion</h4>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Job%20Role%20v%20Years%20Since%20Last%20Promotion-1.png" /></p>
+</section><section class="slide level2">
+
+<h4 id="job-role-v-years-at-company">Job Role v Years At Company</h4>
+<p><img data-src="J.Coate.Case.Study.2.Presentation_files/figure-revealjs/Job%20Role%20v%20Years%20At%20Company-1.png" /></p>
+</section><section id="job-role-trends-recap" class="slide level2">
+<h2>Job Role Trends Recap</h2>
+<ul>
+<li>Regularly reporting overtime, lack of worklife balance, and spikes in attrition
+<ul>
+<li>Sales Executives, Research Scientists, Labratory Technicians</li>
+</ul></li>
+<li>Trends along Managers
+<ul>
+<li>Older in age, longer time between promotions, longest time with company</li>
+</ul></li>
+</ul>
+</section></section>
+<section><section id="in-conclusion" class="title-slide slide level1"><h1>In Conclusion</h1></section><section class="slide level2">
+
+<h3 id="recap">Recap</h3>
+<ul>
+<li>Attrition can be predicted with over 80% accurancy, over 80% sensitivity, and 75% specificity
+<ul>
+<li>Number of Companies Worked, OverTime, Stock Option Level</li>
+</ul></li>
+<li>Salaries can be made competitive taking into account
+<ul>
+<li>Job Level, Job Role</li>
+</ul></li>
+<li>Showing patterns of overtime, low worklife balance, and attrition
+<ul>
+<li>Sales Executives, Research Scientists, Labratory Technicians</li>
+</ul></li>
+</ul>
+</section></section>
+<section id="thank-you" class="title-slide slide level1"><h1>Thank You</h1></section>
+    </div>
+  </div>
+
+  <script src="J.Coate.Case.Study.2.Presentation_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="J.Coate.Case.Study.2.Presentation_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+        // Vertical centering of slides
+        center: true,
+        // Transition style
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+
+
+
+        chalkboard: {
+          toggleNotesButton: false,
+          theme: 'whiteboard',
+        },
+
+        keyboard: {
+          67: function() { RevealChalkboard.toggleNotesCanvas() },    // toggle notes canvas when 'c' is pressed
+          66: function() { RevealChalkboard.toggleChalkboard() }, // toggle chalkboard when 'b' is pressed
+          46: function() { RevealChalkboard.clear() },    // clear chalkboard when 'DEL' is pressed
+           8: function() { RevealChalkboard.reset() },    // reset chalkboard data on current slide when 'BACKSPACE' is pressed
+          68: function() { RevealChalkboard.download() }, // downlad recorded chalkboard drawing when 'd' is pressed
+        },
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'J.Coate.Case.Study.2.Presentation_files/reveal.js-3.3.0.1/plugin/chalkboard/chalkboard.js', async: true },
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
