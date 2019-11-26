@@ -1,0 +1,684 @@
+---
+title: "Case Study 2"
+author: "Jaclyn A Coate"
+date: "`r Sys.Date()`"
+output:
+  revealjs::revealjs_presentation:
+    transition: slide
+    keep_md: true
+    theme: serif
+    highlight: pygments
+    center: true
+    css: styles.css
+    includes:
+      in_header: header.html
+    self_contained: false
+    reveal_plugins: ["chalkboard"]
+    reveal_options:
+      chalkboard:
+        theme: whiteboard
+        toggleNotesButton: false
+---
+
+```{r setup, include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::include_graphics("/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2")
+logo <- "/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2/fritolaylogo.png"
+```
+
+# Introduction
+## Contributors
+### Jaclyn Coate
+
+```{r Introduction}
+# As data scientists for Frito Lay I am excited to review the analyses we've completed with you and your team this afternoon. This presenation will reveal how to help your teams predict attrition among your employees. I will also present a model to help the company identify salary pay, offering them the opportunity to compete in the market when bringing on new employees. Lastly, I will review a few interesting trends among job roles that were surfaced during our exploratory data analysis.
+
+# As data scientists for Budweiser we were thrilled to help decide on new release beers that will compete with the booming microbrewery growth in the United States. This review will contain an analysis of beer bitterness (or IBU) and alcohol by volume (or ABV) by state. This will lead into our recommendations for new beer releases by regional market in the US. We expect Budweiser to be able to compete and excel in this rapidly expanding sector.
+```
+
+```{r environment libraries, echo=FALSE}
+library(revealjs)
+library(tidyverse)
+library(corrplot)
+library(mlbench)
+library(caret)
+library(skimr)
+library(mice)
+library(purrr)
+library(ggplot2)
+library(ggthemes)
+library(cowplot)
+library(class)
+library(e1071)
+```
+
+# Attrition
+
+## Exploratory Data Analysis
+
+- Correlation
+- Trends
+- Causation?
+
+```{r data, results='hide'}
+attrition <- read.csv("https://raw.githubusercontent.com/JaclynCoate/MDS-6306-Doing-Data-Science-Fall-2019/Master/Unit%2014%20and%2015%20Case%20Study%202/CaseStudy2-data.csv", header = TRUE, strip.white=TRUE)
+attrition
+invisible(ncol(attrition))
+invisible(skim(attrition))
+```
+
+***
+### Missing data evaluation
+
+- No missing values 
+- Continue w/ exploratory data analysis
+
+```{r NA eval, results='hide', fig.width = 7, fig.height = 5}
+md.pattern(attrition)
+```
+
+***
+### Dropping all zero variance variables
+
+- EmployeeCount
+- Over18
+- StandardHours
+
+```{r drop zero variance variables}
+invisible(skim(attrition))
+#unique(attrition$EmployeeCount)
+attrition2 <- select(attrition, -c("EmployeeCount", "Over18", "StandardHours"))
+#skim(attrition2)
+#ncol(attrition2)
+```
+
+***
+### Remove logically irrelevant variables
+
+- EmployeeNumber
+- ID
+- PerformanceRating
+  - Self given performance rating
+
+```{r irrelevant variables}
+#skim(attrition2)
+#view(attrition2)
+
+attrition3 <- select(attrition2, -c("EmployeeNumber", "ID", "PerformanceRating"))
+#skim(attrition3)
+invisible(ncol(attrition3))
+#view(attrition3)
+```
+
+***
+### Storing all categorical variables as factors
+
+- Attrition     | Business Travel | Over Time
+- Departemtn    | Education Field | Over 18
+- Gender        | Job Role        | Marital Status
+
+```{r categorical variables}
+# Categorical Variables
+invisible(skim(attrition3))
+```
+
+***
+### Storing all level variables as factors
+
+- Job Involvement    | Environment Satis  | Education | 
+- Relationship Satis | Stock Option Level | Over 18   | 
+- Work Life Balance  | Relationship Satis | Job Level | Job Satisfaction
+
+```{r level variables}
+attrition3$Education <- as.factor(attrition3$Education)
+attrition3$EnvironmentSatisfaction <- as.factor(attrition3$EnvironmentSatisfaction)
+attrition3$JobLevel <- as.factor(attrition3$JobLevel)
+attrition3$JobInvolvement <- as.factor(attrition3$JobInvolvement)
+attrition3$JobSatisfaction <- as.factor(attrition3$JobSatisfaction)
+attrition3$RelationshipSatisfaction <- as.factor(attrition3$RelationshipSatisfaction)
+attrition3$StockOptionLevel <- as.factor(attrition3$StockOptionLevel)
+attrition3$WorkLifeBalance <- as.factor(attrition3$WorkLifeBalance)
+
+invisible(skim(attrition3))
+invisible(ncol(attrition3))
+```
+
+***
+### Correlated Variables Review
+
+- Highly correlated variables can weaken the model
+
+***
+### Correlated Variables Review
+
+```{r attition: high correlation}
+corrFrito <- attrition3
+
+corrFritotable <- corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% view
+
+corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% corrplot("upper", addCoef.col = "white", number.digits = 2, number.cex = 0.5, method="square", order="hclust", tl.srt=45, tl.cex = 0.8)
+invisible(view(corrFritotable))
+```
+
+
+***
+- Highly correlated relationships
+  - Total Working Years v Monthly Income: .78
+  - Years at Company v Years in Current Role: .78
+  - Years at Company v Years with Current Manager: .77
+  - Years at Company v Total Working Years: .64
+  - Years at Company v Years Since Last Promotion: .64
+  - Years with Current Manager v Years in Current Role: .71
+
+***
+### Correlated Variables Review
+
+  - Keep: Monthly Income, Years In Current Role, Years Since Last Promotion, Years At Company, Total Working Years, Years With Current Manager
+  - Drop: Years at Company
+  
+```{r attrition: correlated variables drop}
+# Reviewing the correlated variables we can logically conclude some of these are saying similar things. However, the high correlation doesn't tell the whole story. We will keep investigating to get a better picture of these variables and their importance to Attrition and will only drop the Years At Company variable since it is so closely corelated with many other variables.
+
+invisible(skim(attrition3))
+
+attrition4 <- select(attrition3, -c("YearsAtCompany"))
+invisible(skim(attrition4))
+invisible(ncol(attrition4))
+```
+
+***
+### Numeric v Categorical Review
+
+- Comparison of Attrition (dependent variable of interest) to categorical variables
+- Density plot
+  - Colored by Attrition
+  - If density plot shows peaks in separate areas then important variable
+  - If density plot shows peaks in the same spot (clean overlay) then not an important variable
+
+***
+### Numeric v Categorical Review
+
+```{r attrition: numeric v categorical graph grid}
+# 1. Name target variable
+targetNumCat <- "Attrition"
+
+# 2. Name explanatory variable
+numvariables <- attrition4 %>% keep(is.numeric) %>% colnames
+
+# 3. Create function
+numCatplot <- function(df, explan, resp) {
+  ggplot(data = df) + geom_density(aes_string(x = explan, fill = resp), alpha = 0.5) + xlab(explan) + ylab("Attrition")
+}
+
+  # Example of working function above
+  #numCatplot(attrition4, explan =  "TotalWorkingYears", resp = "Attrition")
+
+# 4. Create plot list for plot_grid function to reference
+plotlistNumCat <- lapply(numvariables, function(x) numCatplot(attrition4, x, targetNumCat))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistNumCat)
+```
+
+***
+### Numeric v Categorical Review
+
+- Remove variables that have similar trends
+- Keep variables that are showing opposite attrition Patterns
+    - Monthly Income, Years In Current Role, Number Companies Worked, Age
+
+```{r attrition: numeric v categorical review}
+invisible(skim(attrition4))
+
+attrition5 <- select(attrition4, -c("TrainingTimesLastYear", "PercentSalaryHike", "DistanceFromHome", "DailyRate", "HourlyRate", "TotalWorkingYears", "MonthlyRate", "YearsWithCurrManager", "YearsSinceLastPromotion"))
+invisible(skim(attrition5))
+invisible(ncol(attrition5))
+```
+
+***
+### Categorical v Categorical Review
+
+- Comparison of Attrition (dependent variable of interest) to numerical variables available
+- Bar Chart
+  - Colored by Attrition
+
+***
+### Categorical v Categorical Review
+
+```{r attrition: categorical v categorical}
+# 1. Name target variable
+targetCatCat1 <- "Attrition"
+
+# 2. Name explanatory variable
+explanatory1 <- attrition5 %>% keep(is.factor) %>% colnames
+
+# 3. Create function
+numCatCat1 <- function(df, explanatory, response) {
+  ggplot(data = df) +geom_bar(aes_string(x = explanatory, fill = response), position = "fill", alpha = 0.9) + coord_flip() + xlab(explanatory)
+}
+
+  # Example of working function above
+  #numCatCat(attrition5, explanatory = "Education", response = "Attrition")
+
+
+# 4. Create plot list for plot_grid function to reference
+plotlistCatCat1 <- lapply(explanatory1, function(x) numCatCat1(attrition5, x, targetCatCat1))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistCatCat1)
+```
+
+***
+### Categorical v Categorical Review
+
+- Remove variables that show a small | zero difference
+- Keep variables that show a large difference
+
+```{r attrition: variable drop}
+#skim(attrition5)
+
+attrition6 <- select(attrition5, -c("BusinessTravel", "Department", "Education", "EducationField", "EnvironmentSatisfaction", "Gender", "JobRole", "JobSatisfaction", "MaritalStatus", "RelationshipSatisfaction", "JobLevel"))
+#skim(attrition6)
+invisible(ncol(attrition6))
+
+#view(attrition6)
+#str(attrition6)
+attrition7 <- attrition6 %>% 
+  mutate(OverTime = ifelse(OverTime == "No", 0, 1))
+attrition7 <- attrition6 %>%
+  mutate(Attrition = ifelse(Attrition ==  "No", 0, 1))
+#view(attrition7)
+```
+
+***
+### K Nearest Neighbor Model Variables
+
+- Response Variable: Attrition
+- Explanatory Variables: Number of Companies Worked, Over Time, Stock Option Level
+
+```{r attrition: train & test sets}
+set.seed(8)
+splitPerc = .8
+trnIndFrito = sample(1:dim(attrition7)[1], round(splitPerc * dim(attrition7)[1]))
+
+trainFrito = attrition7[trnIndFrito,]
+
+testFrito = attrition7[-trnIndFrito,]
+```
+
+***
+### K Nearest Neighbor Model Best K
+
+```{r}
+spec = data.frame(specificity = numeric(30), k = numeric(30))
+for (i in 1:30) 
+  {
+  classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k=i)
+  table(testFrito$Attrition, classificationFrito)
+  CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+  spec$specificity[i] = CMFrito8$byClass[2]
+  spec$k[i] = i
+}
+plot(spec$k, spec$specificity, type = "l", xlab = "k")
+```
+
+***
+### Final KNN Model
+#### Attrition = B_0 + Beta_1 * NumCompaniesWorked + B_2 * OverTime + B_3 * StockOptionLevel
+  - Accuracy > 80%
+  - Sensitivity > 80%
+  - Specificity = 75%
+
+```{r}
+invisible(knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k= 19))
+classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k= 19)
+CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+invisible(CMFrito8)
+```
+
+***
+## Attrition Recap
+
+- Explanatory Variables
+  - Job Level, Job Role
+- Attrition = Beta<sub>0</sub> + Beta<sub>1</sub> * NumCompaniesWorked + Beta<sub>2</sub> * OverTime + Beta<sub>3</sub> * StockOptionLevel
+
+# Salary
+
+## Exploratory Data Analysis
+
+- Correlation
+- Trends
+- Causation?
+
+***
+### Drop NAs
+
+### Missing data evaluation
+
+### Dropping all zero variance variables
+
+
+```{r salary data set creation}
+salary3 <- attrition3
+```
+
+***
+### Correlated Variables Review
+
+- Monthly Income correlated variables
+  - Monthly Income v Total Working Years: .78
+  - Monthly Income v Age: .48
+  - Monthly Income v Years in Current Role: .36
+  - Monthly Income v Years At Company: .49
+  - Monthly Income v Years With Current Manager: .33
+  - Monthly Income v Years Since Last Promotion: .32
+
+***
+### Correlated Variables Review
+
+```{r salary: high correlation}
+corrFrito <- salary3
+
+corrFritotable <- corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% view
+
+corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% corrplot("upper", addCoef.col = "white", number.digits = 2, number.cex = 0.5, method="square", order="hclust", tl.srt=45, tl.cex = 0.8)
+invisible(view(corrFritotable))
+```
+
+***
+### Correlated Variables Review
+- Correlated explanatory variables can weaken the model
+- Keep: Total Working Years
+- Drop: Age, Years In Current Role, Years At Company, Years With Current Manager, Years Since Last Promotion
+
+```{r salary: correlation review}
+salary4 <- select(salary3, -c("Age", "YearsInCurrentRole", "YearsAtCompany", "YearsWithCurrManager", "YearsSinceLastPromotion"))
+#skim(salary4)
+#ncol(salary4)
+```
+
+***
+### Numeric v Numeric Review
+
+```{r salary: numeric v numeric graph grid, fig.width = 15, fig.height = 6}
+# 1. Name target variable
+targetNumCat1 <- salary4 %>% keep(is.numeric) %>% colnames
+
+# 2. Name explanatory variable
+numvariables1 <- "MonthlyIncome"
+
+# 3. Create function
+numCatplot1 <- function(df, explan, resp) {
+  ggplot(data = df) + geom_point(aes_string(x = explan, y = resp, fill = explan)) + xlab(explan) + ylab("")
+}
+
+# 4. Create plot list for plot_grid function to reference
+plotlistNumCat1 <- lapply(targetNumCat1, function(x) numCatplot1(salary4, x, numvariables1))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistNumCat1)
+```
+
+***
+### Numeric v Numeric Review
+
+- Clear linear relationships are selected 
+  - Keep: Monthly Income, Total Working Years
+  - Drop: Percent Salary, Daily Rate, Distance from Home, Hourly Rate, Monthly Rate, Number of Companies Worked, Percent Salary Hike, Training Times Last Year
+  
+```{r salary: numeric v numeric variable removal}
+#skim(salary4)
+salary5 <- select(salary4, -c("DailyRate", "DistanceFromHome", "HourlyRate", "MonthlyRate", "NumCompaniesWorked", "PercentSalaryHike", "TrainingTimesLastYear"))
+#skim(salary5)
+#ncol(salary5)
+```
+
+***
+### Numeric v Categorical Review
+
+- Comparison of Monthly Income (dependent variable of interest) to categorical variables left in model
+- Boxplot
+  - Variations of Monthly Income between boxplots
+
+***
+### Numeric v Categorical Review
+
+```{r Asalar: numeric v categorical graph grid}
+# 1. Name target variable
+targetNumCat2 <- salary5 %>% keep(is.factor) %>% colnames
+
+# 2. Name explanatory variable
+numvariables2 <- "MonthlyIncome"
+
+# 3. Create function
+numCatplot2 <- function(df, explan, resp) {
+  ggplot(data = df) + geom_boxplot(aes_string(x = explan, y = resp, fill = explan)) + xlab(explan) + ylab("") + theme_excel_new()
+}
+
+# 4. Create plot list for plot_grid function to reference
+plotlistNumCat2 <- lapply(targetNumCat2, function(x) numCatplot2(salary5, x, numvariables2))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistNumCat2)
+```
+
+***
+### Numeric v Categorical Review
+
+- Categorical variables with Monthly Income distribution differences
+  - Eduction, Job Level, Job Role
+  
+```{r Numeric v Categorical Review}
+salary6 <- select(salary5, c("MonthlyIncome", "JobLevel", "JobRole", "TotalWorkingYears", "Education"))
+#skim(salary6)
+#ncol(salary6)
+```
+
+***
+##### Monthly Income v Education
+
+```{r Monthly Income v Education}
+salary6 %>% ggplot() + geom_boxplot(aes(x = Education, y = MonthlyIncome, fill = Education)) +
+  theme_excel_new() + ggtitle("Monthly Income v Education") + ylab("Education")
+```
+
+***
+##### Monthly Income v Job Level
+
+```{r Monthly Income v Job Level}
+salary6 %>% ggplot() + geom_boxplot(aes(x = JobLevel, y = MonthlyIncome, fill = JobLevel)) +
+  theme_excel_new() + ggtitle("Monthly Income v Job Level") + ylab("")
+```
+
+***
+##### Monthly Income v Job Role
+
+```{r Monthly Income v Job Role}
+salary6 %>% ggplot() + geom_boxplot(aes(x = JobRole, y = MonthlyIncome, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Monthly Income v Job Role") + ylab("")
+```
+
+***
+### Numeric v Categorical Review
+- Upone closer reivew
+  - Job Level, Job Role
+
+```{r}
+salary7 <- select(salary6, c("MonthlyIncome", "JobLevel", "JobRole", "TotalWorkingYears"))
+#skim(salary7)
+```
+
+***
+### MSPE Model
+
+- Response Variable: Monthly Income
+- Explanatory Variables: Job Level, Job Role, Total Working Years
+
+*** 
+### MSPE Model
+
+- MonthlyIncome = B<sub>0</sub> + B<sub>1</sub> * TotalWorkingYears + B<sub>2</sub> * JobRole + B<sub>3</sub> * JobLevel
+- Root Mean Square Error < 931
+
+```{r salary: train and test sets}
+set.seed(3)
+splitPerc = .8
+
+trnIndFrito = sample(1:dim(salary7)[1], round(splitPerc * dim(salary7)[1]))
+trainFrito = salary7[trnIndFrito,]
+testFrito = salary7[-trnIndFrito,]
+
+FritoModel1 = lm(MonthlyIncome ~ TotalWorkingYears + JobRole + JobLevel, data = trainFrito)
+invisible(summary(FritoModel1))
+
+FritoModelPres1 = predict(FritoModel1, newdata = testFrito)
+
+MSPE1 = sqrt(mean((testFrito$MonthlyIncome - FritoModelPres1)^2))
+MSPE1
+```
+
+## Salary Recap
+
+- Explanatory Variables
+  - Job Level, Job Role
+- Best prediction model
+  - MonthlyIncome = B<sub>0</sub> + B<sub>1</sub> * TotalWorkingYears + B<sub>2</sub> * JobRole + B<sub>3</sub> * JobLevel
+
+# Job Role Trends
+
+## Exploratory Data Analysis
+
+- Trends
+- Causation?
+
+```{r job data}
+job <- read.csv("https://raw.githubusercontent.com/JaclynCoate/MDS-6306-Doing-Data-Science-Fall-2019/Master/Unit%2014%20and%2015%20Case%20Study%202/CaseStudy2-data.csv", header = TRUE, strip.white=TRUE)
+invisible(job)
+invisible(ncol(job))
+invisible(skim(job))
+```
+
+```{r job: as factors}
+job$Education <- as.factor(job$Education)
+job$EnvironmentSatisfaction <- as.factor(job$EnvironmentSatisfaction)
+job$JobLevel <- as.factor(job$JobLevel)
+job$JobInvolvement <- as.factor(job$JobInvolvement)
+job$JobSatisfaction <- as.factor(job$JobSatisfaction)
+job$RelationshipSatisfaction <- as.factor(job$RelationshipSatisfaction)
+job$StockOptionLevel <- as.factor(job$StockOptionLevel)
+job$WorkLifeBalance <- as.factor(job$WorkLifeBalance)
+
+#skim(job)
+```
+
+*** 
+### Categorical v Categorical
+
+```{r eda of job role v categorical var, fig.width = 20, fig.height = 7}
+# 1. Name target variable
+targetCatCat2 <- "JobRole"
+
+# 2. Name explanatory variable
+explanatory2 <- job %>% keep(is.factor) %>% colnames
+
+# 3. Create function
+numCatCat2 <- function(df, explanatory, response) {
+  ggplot(data = df) + geom_bar(aes_string(x = explanatory, fill = response), position = "fill", alpha = 0.9) + coord_flip() + xlab(explanatory) + ylab("")
+}
+
+  # Example of working function above
+  #numCatCat(job, explanatory = "Education", response = "Attrition")
+
+
+# 4. Create plot list for plot_grid function to reference
+plotlistCatCat2 <- lapply(explanatory2, function(x) numCatCat2(job, x, targetCatCat2))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistCatCat2)
+```
+
+***
+### Categorical v Categorical
+
+- Insightful Job Role Trens
+  - Attrition, OverTime, Job Satisfaction
+
+***
+#### Job Role v Attrition
+
+- Sales Reps, Research Scientists, Labratory Technicians
+
+```{r job role v attrition, fig.height = 5}
+job %>% ggplot() + geom_bar(aes(x = Attrition, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+```
+
+***
+#### Job Role v Over Time
+
+- Sales Executives, Research Scientists, Labratory Technicians
+
+```{r job role v over time, fig.height = 5}
+job %>% ggplot() + geom_bar(aes(x = OverTime, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+```
+
+***
+#### Job Role v Job Satisfaction
+
+- Sales Executives, Research Scientists, Labratory Technicians
+
+```{r job role v job satisfaction, fig.height = 5}
+job %>% ggplot() + geom_bar(aes(x = JobSatisfaction, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+```
+
+***
+### Categorical v Numeric
+
+- Trends among certain job roles
+  - Keep: Age, Years Since Last Promotion, Years At Company
+
+***
+#### Job Role v Age
+
+```{r Job Role v Age}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = Age, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Age") + ylab("Education")
+```
+
+***
+#### Job Role v Years Since Last Promotion
+
+```{r Job Role v Years Since Last Promotion}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = YearsSinceLastPromotion, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Years Since Last Promotion") 
+```
+
+*** 
+#### Job Role v Years At Company
+
+```{r Job Role v Years At Company}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = YearsAtCompany, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Years At Company")
+```
+
+***
+## Job Role Trends Recap
+
+- Regularly reporting overtime, lack of worklife balance, and spikes in attrition
+  - Sales Executives, Research Scientists, Labratory Technicians
+- Trends along Managers
+  - Older in age, longer time between promotions, longest time with company
+
+# In Conclusion
+***
+### Recap
+- Attrition can be predicted with over 80% accurancy, over 80% sensitivity, and 75% specificity
+  - Number of Companies Worked, OverTime, Stock Option Level
+- Salaries can be made competitive taking into account
+  - Job Level, Job Role
+- Showing patterns of overtime, low worklife balance, and attrition
+  - Sales Executives, Research Scientists, Labratory Technicians
+
+# Thank You

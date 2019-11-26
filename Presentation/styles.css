@@ -1,0 +1,11 @@
+/* Position the corporate logo in the top right of the page */
+#header-footer .slide-logo {
+  position: absolute;
+  top: 15px;
+  right: 50px;
+  height: 200px;
+  width: 200px;
+}
+
+/* Data background color */
+{data-background=#ff0000}
