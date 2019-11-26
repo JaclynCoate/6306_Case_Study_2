@@ -14,5 +14,5 @@ The purpose of this repository is to share my work in order to complete our MSDS
 
  [Presentation]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/presentations/finalpresentations>
  [CodeBook]: <https://github.com/JaclynCoate/6306_Case_Study_2/tree/master/Codebook>
- [Case Study Requirements]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/case_study_req>
+ [Case Study Requirements]: <https://github.com/JaclynCoate/6306_Case_Study_2/blob/master/CaseStudy2.docx>
  [Miscellaneous]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/Misc>         
