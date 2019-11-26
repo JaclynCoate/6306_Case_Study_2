@@ -1,0 +1,335 @@
+---
+title: "Regression Problem"
+author: "Jaclyn A Coate"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::include_graphics("/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2")
+#, results='hide'
+```
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(skimr)
+library(corrplot)
+library(cowplot)
+library(ggthemes)
+```
+
+```{r data, results='hide'}
+frito <- read.csv("https://raw.githubusercontent.com/JaclynCoate/MDS-6306-Doing-Data-Science-Fall-2019/Master/Unit%2014%20and%2015%20Case%20Study%202/CaseStudy2-data.csv", header = TRUE, strip.white=TRUE)
+```
+
+# Salary Model
+
+***
+## Exploratory Data Analysis
+- Linear Regression
+- Multiple Linear Regression
+- Correlation
+- Causation?
+
+***
+## Steps For EDA w/ Large Number of Categories / Continuous Variables
+1. Check for NAs
+2. Get rid of zero value variables (ones that only have one value).
+3. Use common sense! (variables that don't makes sense remove from your list of variables)
+    - e.g. ID, Employee Number
+4. Check and make sure categorical variables are stored as factors.
+    - e.g. Make sure all variables are categorized correctly - categorical (stock options) or numeric
+5. Storing all level numeric variables as factors
+    - e.g. Job Level, College, etc.
+6. Checking for highly correlated numeric variables
+    - Highly correlated values can weaken the model.
+    - e.g. Monthly Salary, Weekly Salary, they say the same thing and would be highly correlated
+7. Numeric | Numeric
+8. Numeric | Categorical
+9. MSPE Model
+
+```{r all variables}
+#Categorical:
+# "Attrition", "Department", "BusinessTravel", "EducationField", "Gender", "JobRole", "MaritalStatus", "Over18", "OverTime"
+
+# Level
+# "JobInvolvement", "EnvironmentSatisfaction", "Education", "JobLevel", "JobSatisfaction", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel", "WorkLifeBalance"
+
+#Continuous: 
+# "Age", "DailyRate", "DistanceFromHome", "EmployeeCount", "HourlyRate", "MonthlyIncome", "MonthlyRate", "NumCompaniesWorked", "StandardHours" "PercentSalaryHike", "TotalWorkingYears", "TrainingTimesLastYear", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"
+
+# All Variables
+# "Attrition", DailyRate", "Department", "DistanceFromHome", "Education", "EducationField", "EmployeeCount", "EnvironmentSatisfaction", "Gender", "HourlyRate", "JobInvolvement", "JobLevel", "JobRole", "JobSatisfaction", "MaritalStatus", "MonthlyIncome",  "MonthlyRate", "NumCompaniesWorked", "Over18", "OverTime", "PercentSalaryHike", "PerformanceRating", "RelationshipSatisfaction", "StandardHours", "StockOptionLevel", "TotalWorkingYears", "TrainingTimesLastYear", "WorkLifeBalance", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"
+```
+
+```{r data review}
+#frito
+#ncol(frito)
+#skim(frito)
+```
+
+### 1. Drop NAs
+- Completed on previous EDA. Data is clean.
+
+***
+### 2. Dropping all zero variance variables
+- Drop Variables: EmployeeCount, Over18, StandardHours due to zero variance in sd column of skim() feature output
+
+```{r dropping zero variance}
+frito2 <- select(frito, -c("EmployeeCount", "Over18", "StandardHours"))
+#skim(frito2)
+#ncol(frito2)
+```
+
+***
+### 3. Remove logically irrelevant variables
+- "EmployeeNumber": not related to salary
+- "ID": not related to salary
+- "PerformanceRating" : removed because this is a self given performacne rating and emoloyees would still work towards the best raises even when possibly planning on leaving the company
+
+```{r irrelevant variables}
+#skim(frito2)
+#view(frito2)
+
+frito3 <- select(frito2, -c("EmployeeNumber", "ID", "PerformanceRating"))
+#skim(frito3)
+#ncol(frito3)
+```
+
+***
+### 4. Storing all categorical variables as factors
+- Confirmed the below variables are stored as factors with skim() function output
+  - "Attrition", "BusinessTravel", "Department", "EducationField", "Gender", "JobRole", "MaritalStatus", "OverTime"
+
+```{r categorical variables}
+# Categorical Variables
+#skim(frito3)
+```
+
+***
+### 5. Storing all level numeric variables as factors
+- Using the as.factor function to change all level numerical varibales to be stored as factors
+  - "JobInvolvement", "EnvironmentSatisfaction", "Education", "JobLevel", "JobSatisfaction", "RelationshipSatisfaction", "StockOptionLevel", "WorkLifeBalance"
+  
+```{r level variables}
+frito3$Education <- as.factor(frito3$Education)
+frito3$EnvironmentSatisfaction <- as.factor(frito3$EnvironmentSatisfaction)
+frito3$JobLevel <- as.factor(frito3$JobLevel)
+frito3$JobInvolvement <- as.factor(frito3$JobInvolvement)
+frito3$JobSatisfaction <- as.factor(frito3$JobSatisfaction)
+frito3$RelationshipSatisfaction <- as.factor(frito3$RelationshipSatisfaction)
+frito3$StockOptionLevel <- as.factor(frito3$StockOptionLevel)
+frito3$WorkLifeBalance <- as.factor(frito3$WorkLifeBalance)
+
+#skim(frito3)
+#ncol(frito3)
+```
+
+***
+### 6. Checking for highly correlated numeric variables
+- Monthly Income correlated variables
+  - Monthly Income v Total Working Years: .78
+  - Monthly Income v Age: .48
+  - Monthly Income v Years in Current Role: .36
+  - Monthly Income v Years At Company: .49
+  - Monthly Income v Years With Current Manager: .33
+  - Monthly Income v Years Since Last Promotion:.32
+
+***
+```{r high correlation}
+corrFrito <- frito3
+
+corrFritotable <- corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% view
+
+corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% corrplot("upper", addCoef.col = "white", number.digits = 2, number.cex = 0.5, method="square", order="hclust", tl.srt=45, tl.cex = 0.8)
+invisible(view(corrFritotable))
+```
+
+***
+#### Correlation Review
+- Many of these varaibles above that are correlated with Monthly Salar are also correlated with eachother
+  - Including all of them would weaken the model
+  - Decided to keep the highest correlated: Total Working Years
+  - Dopping all variables that correlated with Total Working Years
+    - "Age", "YearsInCurrentRole", "YearsAtCompany", "YearsWithCurrManager", "YearsSinceLastPromotion"
+  
+```{r correlation review}
+frito4 <- select(frito3, -c("Age", "YearsInCurrentRole", "YearsAtCompany", "YearsWithCurrManager", "YearsSinceLastPromotion"))
+#skim(frito4)
+#ncol(frito4)
+```
+
+***
+### 7. Automatic EDA: Numeric v Numeric
+
+```{r}
+# 1. Name target variable
+targetNumCat1 <- frito4 %>% keep(is.numeric) %>% colnames
+
+# 2. Name explanatory variable
+numvariables1 <- "MonthlyIncome"
+
+# 3. Create function
+numCatplot1 <- function(df, explan, resp) {
+  ggplot(data = df) + geom_point(aes_string(x = explan, y = resp, fill = explan)) + xlab(explan) + ylab(resp)
+}
+
+# 4. Create plot list for plot_grid function to reference
+plotlistNumCat1 <- lapply(targetNumCat1, function(x) numCatplot1(frito3, x, numvariables1))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistNumCat1)
+```
+
+***
+#### Numeric v Numeric Review
+- Upon reviewing the large grid of remaining numerical variables we can clearly see random clouds with no real correlation between Monthly Income and the remaining vaiables. 
+  - Keep: "MonthlyIncome", "TotalWorkingYears"
+  - Drop: "PercentSalary"
+  
+```{r}
+#skim(frito4)
+frito5 <- select(frito4, -c("DailyRate", "DistanceFromHome", "HourlyRate", "MonthlyRate", "NumCompaniesWorked", "PercentSalaryHike", "TrainingTimesLastYear"))
+#skim(frito5)
+#ncol(frito5)
+```
+
+***
+### 8. Automatic EDA: Numeric v Categorical
+- X | Y
+- Comparison of Monthly Income (dependent variable of interest) to categorical variables left in model
+- Density plot
+  - Colored by Monthly Income
+  - If density plot shows peaks in separate areas then important variable
+  - If density plot shows peaks in the same spot (clean overlay) then not an important variable
+
+```{r Automatic EDA: Numeric v Categorical}
+# 1. Name target variable
+targetNumCat2 <- frito5 %>% keep(is.factor) %>% colnames
+
+# 2. Name explanatory variable
+numvariables2 <- "MonthlyIncome"
+
+# 3. Create function
+numCatplot2 <- function(df, explan, resp) {
+  ggplot(data = df) + geom_boxplot(aes_string(x = explan, y = resp, fill = explan)) + xlab(explan) + ylab("") + theme_excel_new()
+}
+
+# 4. Create plot list for plot_grid function to reference
+plotlistNumCat2 <- lapply(targetNumCat2, function(x) numCatplot2(frito3, x, numvariables2))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistNumCat2)
+```
+
+#### Numeric v Categorical Review
+- Upon reviewing the large grid we were able to drop those categorical variables that do not have a lot of visible difference between the different categories within a variable.
+    - "Attrition", "BusinessTravel", "Department", "EducationField", "EnvironmentSatisfaction", "Gender", "JobInvolvement", "JobSatisfaction", "MaritalStatus", "OverTime", "RelationshipSatisfaction", "WorkLifeBalance", "StockOptionLevel", 
+- Upon reviewing the large grid we were able to easily see a few categorical variables that had large differences between the levels
+  - "Eduction", "JobLevel", "JobRole"
+  
+```{r Numeric v Categorical Review}
+frito6 <- select(frito5, c("MonthlyIncome", "JobLevel", "JobRole", "TotalWorkingYears", "Education"))
+#skim(frito6)
+#ncol(frito6)
+```
+
+***
+#### Monthly Income v Education
+
+```{r Monthly Income v Education}
+frito6 %>% ggplot() + geom_boxplot(aes(x = Education, y = MonthlyIncome, fill = Education)) +
+  theme_excel_new() + ggtitle("Monthly Income v Education") + ylab("Education")
+```
+
+***
+#### Monthly Income v Job Level
+
+```{r Monthly Income v Job Level}
+frito6 %>% ggplot() + geom_boxplot(aes(x = JobLevel, y = MonthlyIncome, fill = JobLevel)) +
+  theme_excel_new() + ggtitle("Monthly Income v Job Level") + ylab("")
+```
+
+***
+#### Monthly Income v Job Role
+
+```{r Monthly Income v Job Role}
+frito6 %>% ggplot() + geom_boxplot(aes(x = JobRole, y = MonthlyIncome, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Monthly Income v Job Role") + ylab("")
+```
+
+***
+#### Numeric v Categorical Review
+- Upon closer look at the three remaining categorical variabels to utilize we have deicded to only keep 2 of the 3 original variables retained.
+  - "JobLevel", "JobRole"
+
+```{r}
+frito7 <- select(frito6, c("MonthlyIncome", "JobLevel", "JobRole", "TotalWorkingYears"))
+#skim(frito7)
+```
+
+***
+## MSPE Model: 
+- Variables: "JobLevel", "JobRole", "TotalWorkingYears"
+
+*** 
+## MSPE Model: 
+- MonthlyIncome = B_0 + B_1 * TotalWorkingYears + B_2 * JobRole + B_3 * JobLevel
+
+```{r}
+set.seed(3)
+splitPerc = .8
+
+trnIndFrito = sample(1:dim(frito7)[1], round(splitPerc * dim(frito7)[1]))
+trainFrito = frito7[trnIndFrito,]
+testFrito = frito7[-trnIndFrito,]
+```
+
+*** 
+## MSPE Model: 
+- MonthlyIncome = B_0 + B_1 * TotalWorkingYears + B_2 * JobRole + B_3 * JobLevel
+
+```{r}
+FritoModel1 = lm(MonthlyIncome ~ TotalWorkingYears + JobRole + JobLevel, data = trainFrito)
+invisible(summary(FritoModel1))
+
+FritoModelPres1 = predict(FritoModel1, newdata = testFrito)
+
+MSPE1 = sqrt(mean((testFrito$MonthlyIncome - FritoModelPres1)^2))
+MSPE1
+```
+
+***
+# Predicting Salary
+
+```{r}
+NoSalary <- read_excel("/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2/CaseStudy2CompSetNoSalary.xlsx")
+#NoSalary
+```
+
+```{r onyl keep model variables}
+NoSalary <- select(NoSalary, c("ID", "JobLevel", "TotalWorkingYears", "JobRole"))
+#skim(NoSalary)
+
+NoSalary$JobLevel <- as.factor(NoSalary$JobLevel)
+NoSalary$JobRole <- as.factor(NoSalary$JobRole)
+
+skim(NoSalary)
+```
+
+```{r}
+estimates <- predict(FritoModel1, newdata = NoSalary)
+as.data.frame(estimates)
+SalaryEstim <- cbind(NoSalary, estimates)
+SalaryEstim
+```
+
+# Write CSV of fitted No Salary Data Set
+
+```{r}
+#write_csv(SalaryEstim, "/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2\\NoSalaryFinal.csv")
+```

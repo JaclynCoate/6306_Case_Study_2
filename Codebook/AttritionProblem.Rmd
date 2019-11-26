@@ -1,0 +1,690 @@
+---
+title: "attrition Problem"
+author: "Jaclyn A Coate"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::include_graphics("/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2")
+#, results='hide'
+```
+
+```{r environment libraries, echo=FALSE}
+library(tidyverse)
+library(corrplot)
+library(mlbench)
+library(caret)
+library(skimr)
+library(mice)
+library(purrr)
+library(ggplot2)
+library(ggthemes)
+#install.packages("cowplot")
+library(cowplot)
+library(class)
+library(e1071)
+```
+
+# Attrition Model
+
+# Exploratory Data Analysis
+- Correlation
+- Trends
+- Causation
+
+***
+## Steps For EDA w/ Large Number of Categories / Continuous Variables
+1. Check for NAs
+2. Get rid of zero value variables (ones that only have one value).
+3. Use common sense! (variables that don't makes sense remove from your list of variables)
+    - e.g. ID, Employee Number
+4. Check and make sure categorical variables are stored as factors.
+    - e.g. Make sure all variables are categorized correctly - categorical (stock options) or numeric
+5. Storing all level numeric variables as factors
+    - e.g. Job Level, College, etc.
+6. Checking for highly correlated numeric variables
+    - Highly correlated values can weaken the model.
+    - e.g. Monthly Salary, Weekly Salary, they say the same thing and would be highly correlated
+7. Numeric | Categorical
+8. Categorical | Categorical
+9. KNN Model Variables to Reduce
+
+```{r data, results='hide'}
+frito <- read.csv("https://raw.githubusercontent.com/JaclynCoate/MDS-6306-Doing-Data-Science-Fall-2019/Master/Unit%2014%20and%2015%20Case%20Study%202/CaseStudy2-data.csv", header = TRUE, strip.white=TRUE)
+frito
+invisible(ncol(frito))
+invisible(skim(frito))
+```
+
+```{r, echo=FALSE}
+#frito
+#data(frito)
+#head(frito)
+#length(frito)
+#skim(frito)
+
+#Categorical:
+# "Attrition", "Department", "BusinessTravel", "EducationField", "Gender", "JobRole", "MaritalStatus", "Over18", "OverTime"
+
+# Level
+# "JobInvolvement", "EnvironmentSatisfaction", "Education", "JobLevel", "JobSatisfaction", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel", "WorkLifeBalance"
+
+#Continuous: 
+# "Age", "DailyRate", "DistanceFromHome", "EmployeeCount", "HourlyRate", "MonthlyIncome", "MonthlyRate", "NumCompaniesWorked", "StandardHours" "PercentSalaryHike", "TotalWorkingYears", "TrainingTimesLastYear", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"
+
+# All Variables
+# "Attrition", DailyRate", "Department", "DistanceFromHome", "Education", "EducationField", "EmployeeCount", "EnvironmentSatisfaction", "Gender", "HourlyRate", "JobInvolvement", "JobLevel", "JobRole", "JobSatisfaction", "MaritalStatus", "MonthlyIncome",  "MonthlyRate", "NumCompaniesWorked", "Over18", "OverTime", "PercentSalaryHike", "PerformanceRating", "RelationshipSatisfaction", "StandardHours", "StockOptionLevel", "TotalWorkingYears", "TrainingTimesLastYear", "WorkLifeBalance", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"
+```
+
+***
+### 1. Missing data evaluation {data-background=""}
+- No missing values 
+- Continue w/ exploratory data analysis
+
+```{r NA eval}
+md.pattern(frito)
+```
+
+***
+### 2. Dropping all zero variance variables
+- Drop Variables: EmployeeCount, Over18, StandardHours due to zero variance in sd column of skim() feature output
+
+```{r zero variance variables}
+invisible(skim(frito))
+#unique(frito$EmployeeCount)
+frito2 <- select(frito, -c("EmployeeCount", "Over18", "StandardHours"))
+skim(frito2)
+ncol(frito2)
+```
+
+***
+### 3. Remove logically irrelevant variables
+- "EmployeeNumber": not related to attrition
+- "ID": not related to attrition
+- "PerformanceRating" : removed because this is a self given performacne rating and emoloyees would still work towards the best raises even when possibly planning on leaving the company
+
+```{r irrelevant variables}
+#skim(frito2)
+#view(frito2)
+
+frito3 <- select(frito2, -c("EmployeeNumber", "ID", "PerformanceRating"))
+skim(frito3)
+ncol(frito3)
+view(frito3)
+```
+
+***
+### 4. Storing all categorical variables as factors
+- Confirmed the below variables are stored as factors with skim() function output
+  - "Attrition", "BusinessTravel", "Department", "EducationField", "Gender", "JobRole", "MaritalStatus", "Over18", "OverTime"
+
+```{r categorical variables}
+# Categorical Variables
+skim(frito3)
+```
+
+***
+### 5. Storing all level numeric variables as factors
+- Using the as.factor function to change all level numerical varibales to be stored as factors
+  - "JobInvolvement", "EnvironmentSatisfaction", "Education", "JobLevel", "JobSatisfaction", "RelationshipSatisfaction", "StockOptionLevel", "WorkLifeBalance"
+```{r level variables}
+frito3$Education <- as.factor(frito3$Education)
+frito3$EnvironmentSatisfaction <- as.factor(frito3$EnvironmentSatisfaction)
+frito3$JobLevel <- as.factor(frito3$JobLevel)
+frito3$JobInvolvement <- as.factor(frito3$JobInvolvement)
+frito3$JobSatisfaction <- as.factor(frito3$JobSatisfaction)
+frito3$RelationshipSatisfaction <- as.factor(frito3$RelationshipSatisfaction)
+frito3$StockOptionLevel <- as.factor(frito3$StockOptionLevel)
+frito3$WorkLifeBalance <- as.factor(frito3$WorkLifeBalance)
+
+skim(frito3)
+ncol(frito3)
+```
+
+***
+### 6. Checking for highly correlated numeric variables
+- Highly correlated relationships
+  - Total Working Years v Monthly Income: .78
+  - Years at Company v Years in Current Role .78
+  - Years at Company v Years with Current Manager .77
+  - Years at Company v Total Working Years .64
+  - Years at Company v Years Since Last Promotion .64
+  - Years with Current Manager v Years in Current Role .71
+
+```{r high correlation}
+corrFrito <- frito3
+
+corrFritotable <- corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% view
+
+corrFrito %>% keep(is.numeric) %>% na.omit %>% cor %>% corrplot("upper", addCoef.col = "white", number.digits = 2, number.cex = 0.5, method="square", order="hclust", tl.srt=45, tl.cex = 0.8)
+invisible(view(corrFritotable))
+```
+
+***
+#### Correlation Review
+- Reviewing the correlated variables we can logically conclude some of these are saying similar things. However, the high correlation doesn't tell the whole story. We will keep investigating to get a better picture of these variables and their importance to Attrition.
+  - Keep: "MonthlyIncome", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsAtCompany", "TotalWorkingYears", "YearsWithCurrManager"
+  - Drop: "YearsatCompany"
+  
+```{r}
+skim(frito3)
+
+frito3 <- select(frito3, -c("YearsAtCompany"))
+skim(frito3)
+ncol(frito3)
+```
+
+***
+### 7. Numeric v Categorical
+- X | Y
+- Comparison of Attrition (dependent variable of interest) to categorical variables left in model
+- Density plot
+  - Colored by Attrition
+  - If density plot shows peaks in separate areas then important variable
+  - If density plot shows peaks in the same spot (clean overlay) then not an important variable
+
+```{r Numeric v Categorical}
+skim(frito3)
+```
+
+***
+#### Automated EDA: Numeric v  Catgorical
+
+```{r Automated EDA: Numeric v  Catgorical: all at once}
+# 1. Name target variable
+targetNumCat <- "Attrition"
+
+# 2. Name explanatory variable
+numvariables <- frito3 %>% keep(is.numeric) %>% colnames
+
+# 3. Create function
+numCatplot <- function(df, explan, resp) {
+  ggplot(data = df) + geom_density(aes_string(x = explan, fill = resp), alpha = 0.5) + xlab(explan) + ylab("Attrition")
+}
+
+  # Example of working function above
+  #numCatplot(frito3, explan =  "TotalWorkingYears", resp = "Attrition")
+
+# 4. Create plot list for plot_grid function to reference
+plotlistNumCat <- lapply(numvariables, function(x) numCatplot(frito3, x, targetNumCat))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistNumCat)
+```
+
+***
+#### After Numeric v Categorical Review
+- Remove variables that have similar trends
+    - Telling the same story
+    - e.g. "DailyRate", "HourlyRate", "TotalWorkingYears", "MonthlyRate", "YearsWithCurrManager", "YearsAtCompany", "YearsSinceLastPromotion"
+- Remove variables that show the Yes and No of Attrition having the same patterns
+    - "TrainingTimesLastYear", "PercentSalaryHike", "DistanceFromHome"
+- Keep variables that are showing opposite peaks as in the graphs
+    - "MonthlyIncome", "YearsInCurrentRole", "NumCompaniesWorked", "Age"
+
+```{r}
+skim(frito3)
+
+frito4 <- select(frito3, -c("TrainingTimesLastYear", "PercentSalaryHike", "DistanceFromHome", "DailyRate", "HourlyRate", "TotalWorkingYears", "MonthlyRate", "YearsWithCurrManager", "YearsSinceLastPromotion"))
+skim(frito4)
+ncol(frito4)
+```
+
+***
+
+#### Completed Comparison Analysis
+#### Attrition v Age
+
+```{r Attrition v Age}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = Age, fill = Attrition, alpha = .1)) +
+  theme_excel_new() + ggtitle("Attrition v Age") + ylab("Attrition") + xlab("Age"))
+```
+
+***
+#### Attrition v Daily Rate
+
+```{r Attrition v Daily Rate}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = DailyRate, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Daily Rate") + ylab("Attrition") + xlab("Daily Rate"))
+```
+
+***
+#### Attrition v Distance From Home
+
+```{r Attrition v Distance From Home}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = DistanceFromHome, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Distance From Home") + ylab("Attrition") + xlab("Distance From Home"))
+```
+
+***
+#### Attrition v Hourly Rate
+
+```{r Attrition v Hourly Rate}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = HourlyRate, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Hourly Rate") + ylab("Attrition") + xlab("Hourly Rate"))
+```
+
+***
+#### Attrition v Monthly Income
+
+```{r Attrition v Monthly Income}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = MonthlyIncome, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Monthly Income") + ylab("Attrition") + xlab("Monthly Income"))
+```
+
+***
+#### Attrition v Number of Companies Worked
+
+```{r Attrition v Number of Companies Worked}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = NumCompaniesWorked, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Number of Companies Worked") + ylab("Attrition") + xlab("Number of Companies Worked"))
+```
+
+***
+#### Attrition v Percent Salary Hike
+
+```{r Attrition v Percent Salary Hike}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = PercentSalaryHike, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Percent Salary Hike") + ylab("Attrition") + xlab("Percent Salary Hike"))
+```
+
+***
+#### Attrition v Years with Current Manager
+
+```{r Attrition v Years with Current Manager}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = YearsWithCurrManager, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Years with Current Manager") + ylab("Attrition") + xlab("Years with Current Manager"))
+```
+
+***
+#### Attrition v Training Times Last Year
+
+```{r Attrition v Training Times Last Year}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = TrainingTimesLastYear, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Training Times Last Year") + ylab("Attrition") + xlab("Training Times Last Year"))
+```
+
+***
+#### Attrition v Years in Current Role
+
+```{r Attrition v Years in Current Role}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = YearsInCurrentRole, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Years in Current Role") + ylab("Attrition") + xlab("Years in Current Role"))
+```
+
+***
+#### Attrition v Years Since Last Promotion
+
+```{r Attrition v Years Since Last Promotion}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = YearsSinceLastPromotion, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Years Since Last Promotion") + ylab("Attrition") + xlab("Years Since Last Promotion"))
+```
+
+***
+#### Attrition v Total Working Years
+
+```{r Attrition v Total Working Years}
+invisible(frito3 %>% ggplot() + geom_density(aes(x = TotalWorkingYears, fill = Attrition, alpha = 0.1)) +
+  theme_excel_new() + ggtitle("Attrition v Total Working Years") + ylab("Attrition") + xlab("Years Since Last Promotion"))
+```
+
+
+***
+### 8. Categorical v Categorical (Attrition)
+- Y | Fill
+- Comparison of Attrition (dependent variable of interest) to categorical variables in model
+- Bar chart with percentages instead of totals
+  - Colored by Attrition
+  - If bar chart shows a large difference within the levels/categories of the y variable then it is identified as an important variable to include in the model
+  - If bar chart shows a small or zero difference within the levels/categories of the y variable then it is not an important variable to include in the model
+
+```{r Categorical v Categorical (Attrition)}
+str(frito4)
+frito4 %>% ggplot() + geom_bar(aes(x = Education, fill = Attrition), position = "fill", alpha = 0.9) + coord_flip()
+```
+
+***
+#### Automated EDA: Categorical v Categorical (Attrition) all at once
+
+```{r Automated EDA: Categorical v Categorical (Attrition) all at once}
+# 1. Name target variable
+targetCatCat1 <- "Attrition"
+
+# 2. Name explanatory variable
+explanatory1 <- frito4 %>% keep(is.factor) %>% colnames
+
+# 3. Create function
+numCatCat1 <- function(df, explanatory, response) {
+  ggplot(data = df) +geom_bar(aes_string(x = explanatory, fill = response), position = "fill", alpha = 0.9) + coord_flip() + xlab(explanatory)
+}
+
+  # Example of working function above
+  #numCatCat(frito4, explanatory = "Education", response = "Attrition")
+
+
+# 4. Create plot list for plot_grid function to reference
+plotlistCatCat1 <- lapply(explanatory1, function(x) numCatCat1(frito3, x, targetCatCat1))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistCatCat1)
+```
+
+***
+#### After Categorical v Categorical Review
+- Remove variables that show a small | zero difference within the levels/categories of the y variable
+    - "BusinessTravel", "Department", "Education", "EducationField", "EnvironmentSatisfaction", "Gender", "JobRole", "JobSatisfaction", "MartialStatus", "RelationshipSatisfaction", "JobLevel"
+- Keep variables that show a large difference within the levels/categories of the y variable
+    - "JobInvolvement", "WorkLifeBalance", "Overtime", "StockOptionLevel"
+
+```{r}
+#skim(frito4)
+
+frito5 <- select(frito4, -c("BusinessTravel", "Department", "Education", "EducationField", "EnvironmentSatisfaction", "Gender", "JobRole", "JobSatisfaction", "MaritalStatus", "RelationshipSatisfaction", "JobLevel"))
+#skim(frito5)
+ncol(frito5)
+
+#view(frito5)
+#str(frito5)
+frito6 <- frito5 %>% 
+  mutate(OverTime = ifelse(OverTime == "No", 0, 1))
+frito6 <- frito5 %>%
+  mutate(Attrition = ifelse(Attrition ==  "No", 0, 1))
+#view(frito6)
+```
+
+
+***
+### 9. KNN Model Variables to Reduce Variables
+- Categorical: "JobInvolvement", "JobLevel", "OverTime", "StockOptionLevel", "WorkLifeBalance"
+- Numerical: "Age", "MonthlyIncome", "NumCompaniesWorked", "YearsInCurrentRole"
+
+### Review of multiple models
+```{r}
+set.seed(8)
+splitPerc = .8
+trnIndFrito = sample(1:dim(frito6)[1], round(splitPerc * dim(frito6)[1]))
+
+trainFrito = frito6[trnIndFrito,]
+
+testFrito = frito6[-trnIndFrito,]
+```
+
+#### 1. Age, Job Involvement, Job Level
+
+```{r}
+#invisible(knn(trainFrito[,c(1,3,4)], testFrito[,c(1,3,4)], trainFrito$Attrition, prob = TRUE, k=19))
+#classificationFrito = knn(trainFrito[,c(1,3,4)], testFrito[,c(1,3,4)], trainFrito$Attrition, prob = TRUE, k=19)
+#CMFrito1.1 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito1.1
+```
+
+
+
+
+#### 2. Job Involvement, Monthly Income, Number Companies Worked
+
+```{r Job Involvement, Monthly Income, Number Companies Worked}
+#invisible(knn(trainFrito[,c(3,4,5)], testFrito[,c(3,4,5)], trainFrito$Attrition, prob = TRUE, k=19))
+#classificationFrito = knn(trainFrito[,c(3,4,5)], testFrito[,c(3,4,5)], trainFrito$Attrition, prob = TRUE, k=19)
+#CMFrito2 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito2
+```
+
+#### 3. Monthly Income, Number of Companies Worked, Over Time
+
+```{r Monthly Income, Number of Companies Worked}
+#invisible(knn(trainFrito[,c(4,5,6)], testFrito[,c(4,5,6)], trainFrito$Attrition, prob = TRUE, k=7))
+#classificationFrito = knn(trainFrito[,c(4,5,6)], testFrito[,c(4,5,6)], trainFrito$Attrition, prob = TRUE, k=7)
+#CMFrito3 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito3
+```
+
+#### 4. Number of Companies Worked, Over Time, Stock Option Level
+
+```{r Number of Companies Worked, Over Time, Stock Option Level}
+#invisible(knn(trainFrito[,c(5,6,7)], testFrito[,c(5,6,7)], trainFrito$Attrition, prob = TRUE, k=7))
+#classificationFrito = knn(trainFrito[,c(5,6,7)], testFrito[,c(5,6,7)], trainFrito$Attrition, prob = TRUE, k=7)
+#CMFrito5 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito5
+```
+
+#### 5. Over Time, WorkLifeBalance, Years In Current Role
+
+```{r}
+#invisible(knn(trainFrito[,c(6,7,8)], testFrito[,c(6,7,8)], trainFrito$Attrition, prob = TRUE, k=7))
+#classificationFrito = knn(trainFrito[,c(6,7,8)], testFrito[,c(6,7,8)], trainFrito$Attrition, prob = TRUE, k=7)
+#CMFrito6 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito6
+```
+
+
+#### 6. Stock Option Level, Work Life Balance, Age
+
+```{r}
+#invisible(knn(trainFrito[,c(7,8,1)], testFrito[,c(7,8,1)], trainFrito$Attrition, prob = TRUE, k=7))
+#classificationFrito = knn(trainFrito[,c(7,8,1)], testFrito[,c(7,8,1)], trainFrito$Attrition, prob = TRUE, k=7)
+#CMFrito7 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito7
+```
+
+#### 7. Work Life Balance, Years in Current Role, Age
+
+```{r}
+#invisible(knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k= 19))
+#classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k= 19)
+#CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito8
+```
+
+#### 8. Montly Income (4) Over Time(6) Stock Option Level (7)
+```{r}
+#invisible(knn(trainFrito[,c(4,6,7)], testFrito[,c(4,6,7)], trainFrito$Attrition, prob = TRUE, k=19))
+#classificationFrito = knn(trainFrito[,c(4,6,7)], testFrito[,c(4,6,7)], trainFrito$Attrition, prob = TRUE, k=19)
+#CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#CMFrito8
+```
+
+
+
+#### Find best k for Model 7
+- Best k: 15 - 23
+```{r find best k}
+set.seed(8)
+splitPerc = .8
+trnIndFrito = sample(1:dim(frito6)[1], round(splitPerc * dim(frito6)[1]))
+
+trainFrito = frito6[trnIndFrito,]
+
+testFrito = frito6[-trnIndFrito,]
+
+spec = data.frame(specificity = numeric(30), k = numeric(30))
+for (i in 1:30) 
+  {
+  classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k=i)
+  table(testFrito$Attrition, classificationFrito)
+  CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+  spec$specificity[i] = CMFrito8$byClass[2]
+  spec$k[i] = i
+}
+plot(spec$k, spec$specificity, type = "l", xlab = "k")
+#k <- which.max(spec$specificity)
+```
+
+***
+#### Final Model (7)
+
+```{r}
+invisible(knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k= 19))
+classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k= 19)
+CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+CMFrito8
+```
+
+***
+## Final KNN Prediction Model for Attrition
+- Attrition is most closely identified by taking into account
+  1. Number of companies a person has worked.
+  2. If they do or do not have to work overtime.
+  3. An employee's stock option level
+- Accuracy > 80%
+- Sensitivity > 80%
+- Specificity = 75%
+
+***
+## Competition Set Analysis
+```{r}
+competition <- read.csv("https://raw.githubusercontent.com/JaclynCoate/MDS-6306-Doing-Data-Science-Fall-2019/Master/Unit%2014%20and%2015%20Case%20Study%202/CaseStudy2CompSet%20No%20Attrition.csv", header = TRUE, strip.white=TRUE)
+invisible(competition)
+```
+
+## KNN Model Used to Predict Attrition
+```{r}
+#Work Life Balance, Years in Current Role, Age
+competition <- select(competition, c("ID", "WorkLifeBalance", "YearsInCurrentRole", "Age"))
+
+estimates <- data.frame(knn(trainFrito[,c(8,1,3)], competition[,c(2,3,4)], trainFrito$Attrition, prob = TRUE, k = 19))
+compFinal <- cbind(competition, estimates)
+colnames(compFinal)[5] <- "Attrition"
+
+compFinal <- compFinal %>% 
+  mutate(Attrition = ifelse(Attrition == 0, "No", "Yes"))
+invisible(compFinal)
+```
+
+### Checking model results aginst graphical analysis
+
+```{r}
+compFinal %>% ggplot(mapping = aes(x = Attrition)) + geom_bar() + ggtitle("Comeptition Set: Attrition Count") + theme_excel_new()
+
+frito %>% ggplot(mapping = aes(x = Attrition)) + geom_bar() + ggtitle("Original Data: Attrition Count") + theme_excel_new()
+```
+
+### Checking model results aginst graphical analysis
+
+```{r}
+compFinal %>% ggplot() + geom_density(aes(x = Age, fill = Attrition, alpha = .1)) +
+  theme_excel_new() + ggtitle("Attrition v Age") + ylab("Attrition") + xlab("Age")
+```
+
+### Checking model against graphical analysis
+
+```{r}
+compFinal %>% ggplot() + geom_bar(aes(x = WorkLifeBalance, fill = Attrition), position = "fill", alpha = .7) + coord_flip()
+```
+
+### Write CSV of fitted Competition Data Set
+```{r}
+#write_csv(compFinal, "/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2\\CompetitionSet.csv")
+```
+
+# Things I had to walk away from
+#### Trying to mean of all three variables
+
+```{r}
+#iterations = 100
+#numks = 100 
+#masterAcc = matrix(nrow = iterations, ncol = numks)
+#for(j in 1:iterations) {
+#  accs = data.frame(accuracy = numeric(numks), k = numeric(numks))
+#  trnIndFrito = sample(1:dim(frito6)[1], round(splitPerc * dim(frito6)[1]))
+#  trainFrito = frito6[trnIndFrito,]
+#  testFrito = frito6[-trnIndFrito,]
+#  for(i in 1:numks) {
+#    classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k=i)
+#    table(testFrito$Attrition, classificationFrito)
+#    CMFrito8 = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#    masterAcc[j,i] = CMFrito8$overall[1]
+#  }
+#}
+
+#MeanAcc = colMeans(masterAcc)
+#plot(seq(1,numks,1),MeanAcc, type = "l")
+#k <- which.max(MeanAcc)
+
+#@@@@@@@@@@@@@@@@@@
+
+#iterations = 500
+#masterAcc = matrix(nrow = iterations)
+#masterSen = matrix(nrow = iterations)
+#masterSpec = matrix(nrow = iterations)
+#splitPer = .7
+#for (j in 1:iterations)
+#  {
+#  trnIndFrito = sample(1:dim(frito6)[1],round(splitPerc * dim(frito6)[1]))
+#  trainFrito = frito6[trnIndFrito,]
+#  testFrito = frito6[-trnIndFrito,]
+#  
+#  classificationFrito = knn(trainFrito[,c(8,1,3)], testFrito[,c(8,1,3)], trainFrito$Attrition, prob = TRUE, k=i)
+#  table(testFrito$Attrition, classificationFrito)
+#  
+#  CMFritoInt = confusionMatrix(table(testFrito$Attrition, classificationFrito))
+#  masterAcc[j] = CMFritoInt$overall[1]
+#  masterSen[j] = CMFritoInt$byClass[1]
+#  masterSpec[j] = CMFritoInt$byClass[2]
+#}
+
+#MeanAccUFrit = colMeans(masterAcc)
+#MeanAccUFrit
+#MeanSenFrit = colMeans(masterSen)
+#MeanSenFrit
+#MeanSpecFrit = colMeans(masterSpec)
+#MeanSpecFrit
+```  
+
+
+
+
+### 10. NaiveBates Model to Reduce Variables
+- Categorical: "JobInvolvement", "JobLevel", "OverTime", "StockOptionLevel", "WorkLifeBalance"
+- Numerical: "Age", "MonthlyIncome", "NumCompaniesWorked", "YearsInCurrentRole"
+
+#### 1. All Variable
+
+```{r}
+#set.seed(4)
+#splitPerc = .7
+#trnIndFrito = sample(1:dim(frito5)[1], round(splitPerc * dim(frito5)[1]))
+#trnIndFrito
+
+#trainFrito = frito6[trnIndFrito,]
+#trainFrito
+
+#testFrito = frito6[-trnIndFrito,]
+#testFrito
+
+#nBfrito1 <- naiveBayes(Attrition ~ . , data = trainFrito)
+
+#predict(nBfrito1, testFrito[,c(1,3,4)], type = "raw")
+
+#table(predict(nBfrito1, testFrito[,c(1,3,4)], type = "raw"), testFrito$Attrition)
+
+
+
+
+
+
+#modelU7.s4 <- naiveBayes(Survived ~ . , data =  trainTitanicU7.s4)
+
+#predict(modelU7.s4, testTitanicU7.s4[,c(2,4)], type = "raw")
+
+#table(predict(modelU7.s4, testTitanicU7.s4[,c(2,4)]), testTitanicU7.s4$Survived)
+
+#CMU7.s4 = confusionMatrix(table(predict(modelU7.s4, testTitanicU7.s4[,c(2,4)]), testTitanicU7.s4$Survived))
+#CMU7.s4
+
+#knn(trainTitanicU7.s4[,c(2,4)], testTitanicU7.s4[,c(2,4)],trainTitanicU7.s4$Survived, prob = TRUE, k = 11)
+#classKNN.s4 = knn(trainTitanicU7.s4[,c(2,4)], testTitanicU7.s4[,c(2,4)],trainTitanicU7.s4$Survived, prob = TRUE, k = 11)
+#CMknnU7.s4 = confusionMatrix(table(testTitanicU7.s4$Survived, classKNN.s4))
+#CMknnU7.s4
+```
+
+```{r}
+```
+
+```{r}
+```
+

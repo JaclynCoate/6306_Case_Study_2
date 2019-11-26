@@ -1,0 +1,128 @@
+---
+title: "Job Role Trends"
+author: "Jaclyn ! Coate"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::include_graphics("/Users/Jaco/Desktop/SMU/Fall2019/DS_6306_Doing_Data_Science/Unit_14CaseStudy2")
+#, results='hide'
+```
+
+```{r}
+library(tidyverse)
+library(skimr)
+library(cowplot)
+library(ggthemes)
+```
+
+```{r data, results='hide'}
+job <- read.csv("https://raw.githubusercontent.com/JaclynCoate/MDS-6306-Doing-Data-Science-Fall-2019/Master/Unit%2014%20and%2015%20Case%20Study%202/CaseStudy2-data.csv", header = TRUE, strip.white=TRUE)
+invisible(job)
+invisible(ncol(job))
+invisible(skim(job))
+```
+
+```{r grouped variables}
+#Categorical:
+# "Attrition", "Department", "BusinessTravel", "EducationField", "Gender", "JobRole", "MaritalStatus", "Over18", "OverTime"
+
+# Level
+# "JobInvolvement", "EnvironmentSatisfaction", "Education", "JobLevel", "JobSatisfaction", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel", "WorkLifeBalance"
+
+#Continuous: 
+# "Age", "DailyRate", "DistanceFromHome", "EmployeeCount", "HourlyRate", "MonthlyIncome", "MonthlyRate", "NumCompaniesWorked", "StandardHours" "PercentSalaryHike", "TotalWorkingYears", "TrainingTimesLastYear", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"
+
+# All Variables
+# "Attrition", DailyRate", "Department", "DistanceFromHome", "Education", "EducationField", "EmployeeCount", "EnvironmentSatisfaction", "Gender", "HourlyRate", "JobInvolvement", "JobLevel", "JobRole", "JobSatisfaction", "MaritalStatus", "MonthlyIncome",  "MonthlyRate", "NumCompaniesWorked", "Over18", "OverTime", "PercentSalaryHike", "PerformanceRating", "RelationshipSatisfaction", "StandardHours", "StockOptionLevel", "TotalWorkingYears", "TrainingTimesLastYear", "WorkLifeBalance", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager"
+```
+
+```{r as factors}
+job$Education <- as.factor(job$Education)
+job$EnvironmentSatisfaction <- as.factor(job$EnvironmentSatisfaction)
+job$JobLevel <- as.factor(job$JobLevel)
+job$JobInvolvement <- as.factor(job$JobInvolvement)
+job$JobSatisfaction <- as.factor(job$JobSatisfaction)
+job$RelationshipSatisfaction <- as.factor(job$RelationshipSatisfaction)
+job$StockOptionLevel <- as.factor(job$StockOptionLevel)
+job$WorkLifeBalance <- as.factor(job$WorkLifeBalance)
+
+#skim(job)
+```
+
+# Job Role Trends
+## Categorical v Categorical
+- After reviewing the categorical variables to compare to our Job Roles the below would be insightful for our clients
+  - Attrition, OverTime, Job Satisfaction
+
+```{r Categorical v Categorical}
+#str(job)
+job %>% ggplot() + geom_bar(aes(x = Attrition, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = JobSatisfaction, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = OverTime, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = BusinessTravel, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = Gender, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = JobInvolvement, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = EnvironmentSatisfaction, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = PerformanceRating, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+
+job %>% ggplot() + geom_bar(aes(x = WorkLifeBalance, fill = JobRole), position = "fill", alpha = 0.9) + coord_flip()
+```
+
+```{r eda of job role v categorical var}
+# 1. Name target variable
+targetCatCat2 <- "JobRole"
+
+# 2. Name explanatory variable
+explanatory2 <- job %>% keep(is.factor) %>% colnames
+
+# 3. Create function
+numCatCat2 <- function(df, explanatory, response) {
+  ggplot(data = df) + geom_bar(aes_string(x = explanatory, fill = response), position = "fill", alpha = 0.9) + coord_flip() + xlab(explanatory) + ylab("")
+}
+
+  # Example of working function above
+  #numCatCat(job, explanatory = "Education", response = "Attrition")
+
+
+# 4. Create plot list for plot_grid function to reference
+plotlistCatCat2 <- lapply(explanatory2, function(x) numCatCat2(job, x, targetCatCat2))
+
+# 5. Grid of all categorical variables plotted against Attrition
+plot_grid(plotlist = plotlistCatCat2)
+```
+
+## Categorical v Numeric
+- After reviewing the numeric variables to compare to our Job Roles the below would be insightful for our clients
+  - Age, Years Since Last Promotion, Distance from Home, Years At Company
+
+```{r Job Role v Age}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = Age, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Age") + ylab("Education")
+```
+
+```{r Job Role v Years Since Last Promotion}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = YearsSinceLastPromotion, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Years Since Last Promotion") 
+```
+
+```{r Job Role v Distance from Home}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = DistanceFromHome, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Distance from Home")
+```
+
+```{r Job Role v Years At Company}
+job %>% ggplot() + geom_boxplot(aes(x = JobRole, y = YearsAtCompany, fill = JobRole)) +
+  theme_excel_new() + ggtitle("Job Role v Years At Company")
+```
