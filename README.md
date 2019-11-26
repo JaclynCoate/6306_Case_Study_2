@@ -13,6 +13,6 @@ The purpose of this repository is to share my work in order to complete our MSDS
  - Jaclyn Coate: jcoate@smu.edu 
 
  [Presentation]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/presentations/finalpresentations>
- [CodeBook]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/codebook>
+ [CodeBook]: <https://github.com/JaclynCoate/6306_Case_Study_2/tree/master/Codebook>
  [Case Study Requirements]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/case_study_req>
  [Miscellaneous]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/Misc>         
