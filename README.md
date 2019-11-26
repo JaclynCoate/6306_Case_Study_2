@@ -7,6 +7,7 @@ The purpose of this repository is to share my work in order to complete our MSDS
 * [Presentation] - Presenation and accompanying RMD, MD, HTML, & CSS, files
 * [CodeBook] - individual EDAs and codebooks for each analysis in the presentation
 * [Case Study Requirements] - case study documentation and rubric
+* [Predictions] - CSV files containing the Attrition and Salary predictions using models created in analysis
 
 ## Contributors
  - Jaclyn Coate: jcoate@smu.edu 
@@ -14,3 +15,4 @@ The purpose of this repository is to share my work in order to complete our MSDS
  [Presentation]: <https://github.com/JaclynCoate/6306_Case_Study_1/tree/master/presentations/finalpresentations>
  [CodeBook]: <https://github.com/JaclynCoate/6306_Case_Study_2/tree/master/Codebook>
  [Case Study Requirements]: <https://github.com/JaclynCoate/6306_Case_Study_2/blob/master/CaseStudy2.docx>
+ [Predictions]: <https://github.com/JaclynCoate/6306_Case_Study_2/tree/master/Predictions>
