@@ -342,7 +342,7 @@ invisible(CMFrito8)
 ## Attrition Recap
 
 - Explanatory Variables
-  - Job Level, Job Role
+  - Number of Companies Worked, Overtime, & Stock Option Leve
 - Attrition = Beta<sub>0</sub> + Beta<sub>1</sub> * NumCompaniesWorked + Beta<sub>2</sub> * OverTime + Beta<sub>3</sub> * StockOptionLevel
 
 # Salary
