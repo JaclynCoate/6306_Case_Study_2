@@ -1,7 +1,7 @@
 ---
 title: "Case Study 2"
 author: "Jaclyn A Coate"
-date: "2019-11-26"
+date: "2019-12-12"
 output:
   revealjs::revealjs_presentation:
     transition: slide
@@ -326,7 +326,7 @@ output:
 ***
 ### Categorical v Categorical
 
-- Insightful Job Role Trens
+- Insightful Job Role Trends
   - Attrition, OverTime, Job Satisfaction
 
 ***

@@ -603,7 +603,7 @@ plot_grid(plotlist = plotlistCatCat2)
 ***
 ### Categorical v Categorical
 
-- Insightful Job Role Trens
+- Insightful Job Role Trends
   - Attrition, OverTime, Job Satisfaction
 
 ***
