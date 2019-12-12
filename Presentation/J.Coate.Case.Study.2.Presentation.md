@@ -108,8 +108,8 @@ output:
 ***
 ### Correlated Variables Review
 
-  - Keep: Monthly Income, Years In Current Role, Years Since Last Promotion, Years At Company, Total Working Years, Years With Current Manager
-  - Drop: Years at Company
+  - Drop: Monthly Income, Years In Current Role, Years Since Last Promotion, Years At Company, Total Working Years, Years With Current Manager
+  - Keep: Years at Company
   
 
 
@@ -182,7 +182,7 @@ output:
 ## Attrition Recap
 
 - Explanatory Variables
-  - Number of Companies Worked, Overtime, & Stock Option Leve
+  - Number of Companies Worked, Overtime, & Stock Option Level
 - Attrition = Beta<sub>0</sub> + Beta<sub>1</sub> * NumCompaniesWorked + Beta<sub>2</sub> * OverTime + Beta<sub>3</sub> * StockOptionLevel
 
 # Salary
@@ -194,14 +194,18 @@ output:
 - Causation?
 
 ***
-### Drop NAs
-
 ### Missing data evaluation
 
 ### Dropping all zero variance variables
 
+### Removed logically irrelevant variables
 
 
+
+***
+### Correlated Variables Review
+
+![](J.Coate.Case.Study.2.Presentation_files/figure-revealjs/salary: high correlation-1.png)
 
 ***
 ### Correlated Variables Review
@@ -213,11 +217,6 @@ output:
   - Monthly Income v Years At Company: .49
   - Monthly Income v Years With Current Manager: .33
   - Monthly Income v Years Since Last Promotion: .32
-
-***
-### Correlated Variables Review
-
-![](J.Coate.Case.Study.2.Presentation_files/figure-revealjs/salary: high correlation-1.png)
 
 ***
 ### Correlated Variables Review
