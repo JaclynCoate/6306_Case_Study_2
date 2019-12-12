@@ -302,7 +302,7 @@ output:
 ## Salary Recap
 
 - Explanatory Variables
-  - Job Level, Job Role
+  - Job Level, Job Role, Total Working Years
 - Best prediction model
   - MonthlyIncome = B<sub>0</sub> + B<sub>1</sub> * TotalWorkingYears + B<sub>2</sub> * JobRole + B<sub>3</sub> * JobLevel
 
@@ -384,7 +384,7 @@ output:
 - Attrition can be predicted with over 80% accurancy, over 80% sensitivity, and 75% specificity
   - Number of Companies Worked, OverTime, Stock Option Level
 - Salaries can be made competitive taking into account
-  - Job Level, Job Role
+  - Job Level, Job Role, Years at Company
 - Showing patterns of overtime, low worklife balance, and attrition
   - Sales Executives, Research Scientists, Labratory Technicians
 
